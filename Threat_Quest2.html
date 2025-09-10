@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat_Quest: Incident Response</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #0d0d1e;
+            color: #d1d5db;
+        }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-4">
+    <div id="game-container" class="max-w-xl w-full bg-gray-800 border-4 border-gray-700 rounded-3xl shadow-2xl p-8 text-center">
+        <h1 class="font-['Orbitron'] text-4xl mb-4 text-blue-400 drop-shadow-md"></h1>
+        <div id="story-text" class="text-lg leading-relaxed mb-8 min-h-[100px]"></div>
+
+        <div id="term-explanation-buttons" class="flex flex-wrap justify-center gap-2 mb-8">
+            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Detection & Analysis">✨ Explain Detection & Analysis ✨</button>
+            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Containment">✨ Explain Containment ✨</button>
+            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Eradication">✨ Explain Eradication ✨</button>
+            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Recovery">✨ Explain Recovery ✨</button>
+        </div>
+
+        <div id="explanation-container" class="hidden bg-gray-700 p-4 rounded-2xl mb-6 border-2 border-gray-600 text-left relative">
+            <button id="close-explanation-btn" class="absolute top-2 right-2 text-red-400 hover:text-red-500 font-bold text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-2">Term Explanation:</h2>
+            <p id="explanation-text"></p>
+        </div>
+
+        <div id="choices-container" class="flex flex-col space-y-4"></div>
+
+        <div id="game-over-container" class="hidden">
+            <div id="results-card" class="bg-gray-700 p-6 rounded-2xl mb-6 border-2 border-gray-600">
+                <h2 class="text-2xl font-bold mb-2">Simulation Complete</h2>
+                <p class="text-xl font-mono">Final Score: <span id="final-score" class="text-blue-400 font-bold"></span></p>
+            </div>
+            <div id="feedback-card" class="bg-gray-700 p-6 rounded-2xl border-2 border-gray-600 mb-6"></div>
+            <button id="restart-btn" class="bg-red-500 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 ease-in-out hover:bg-red-600 hover:scale-105">Restart Simulation</button>
+        </div>
+    </div>
+
+    <script>
+        const scenarios = {
+            'malware_start': {
+                title: 'Malware Outbreak',
+                text: "You are a Level 1 SOC Analyst. An alert fires from a critical production server: 'Unusual outbound network traffic.' This is the **Detection & Analysis** phase. Your lead is in a meeting. The fate of the system is in your hands.",
+                choices: [
+                    { text: "Immediately isolate the server from the network.", next: 'contain_threat_malware' },
+                    { text: "Begin an immediate forensic analysis of server logs.", next: 'analyze_logs_fail_malware', penalty: 20, mistake: "Started analysis before containment." }
+                ]
+            },
+            'phishing_start': {
+                title: 'Phishing Campaign',
+                text: "An alert flags a user account for an unusual login from an unapproved country. This user, Jane, also just clicked a suspicious link in a phishing email. You are in the **Detection & Analysis** phase. What's your first move?",
+                choices: [
+                    { text: "Immediately disable Jane's account.", next: 'contain_threat_phishing' },
+                    { text: "Send a new phishing awareness email to all staff.", next: 'send_phishing_email_fail', penalty: 25, mistake: "Prioritized awareness over containment." }
+                ]
+            },
+            'insider_start': {
+                title: 'Insider Threat',
+                text: "The Insider Threat dashboard lights up. A senior administrator, Mark, is attempting to access highly sensitive customer data he has no business need for. This is a critical **Detection & Analysis** phase.",
+                choices: [
+                    { text: "Disable Mark's account immediately and notify management.", next: 'contain_threat_insider' },
+                    { text: "Watch his activity to gather more evidence.", next: 'gather_evidence_fail', penalty: 35, mistake: "Delayed containment to gather evidence." }
+                ]
+            },
+            'ransomware_start': {
+                title: 'Ransomware Attack',
+                text: "You receive a call from a panicked team lead: a shared file server is now inaccessible, and all documents have a '.enc' extension. The attacker's ransom note is on the desktop. The **Detection & Analysis** phase is critical.",
+                choices: [
+                    { text: "Immediately disconnect the file server from the network.", next: 'contain_threat_ransomware' },
+                    { text: "Try to decrypt a few test files to see what type of encryption is being used.", next: 'decrypt_fail', penalty: 40, mistake: "Attempted decryption before containment." }
+                ]
+            },
+            'contain_threat_malware': {
+                text: "You successfully isolate the server. The suspicious traffic stops. This is the **Containment** phase. You have prevented the threat from spreading.",
+                choices: [
+                    { text: "Run a full-system malware scan and vulnerability assessment.", next: 'eradicate_threat_malware' },
+                    { text: "Revert the server to a previous clean backup.", next: 'revert_backup_fail', penalty: 30, mistake: "Reverted to a backup without preserving forensic data." }
+                ]
+            },
+            'analyze_logs_fail_malware': {
+                text: "You begin your log analysis before containing the threat. The attacker detects your presence and, before you can act, pivots to another machine. The initial incident escalates. Now in an **Escalated Containment** phase, you must act fast to prevent a total breach.",
+                choices: [
+                    { text: "Block the attacker's IP and disable the compromised user account.", next: 'contain_escalation' },
+                    { text: "Initiate an emergency network-wide password reset.", next: 'password_reset_fail', penalty: 50, mistake: "Initiated a password reset before containing the attacker." }
+                ]
+            },
+            'eradicate_threat_malware': {
+                text: "You run a full system scan and successfully remove the malware from the server. All identified vulnerabilities have been patched. This is the **Eradication** phase.",
+                choices: [
+                    { text: "Verify the system is clean and begin restoration.", next: 'recover_systems' }
+                ]
+            },
+            'contain_threat_phishing': {
+                text: "Jane's account is disabled. This is the **Containment** phase. You have stopped the immediate threat of the attacker using her account to spread on the network.",
+                choices: [
+                    { text: "Begin forensic analysis of Jane's machine and recent network activity.", next: 'eradicate_threat_phishing' },
+                    { text: "Send a new phishing awareness email to all staff.", next: 'send_phishing_email_fail', penalty: 25, mistake: "Prioritized awareness over eradication and recovery." }
+                ]
+            },
+            'send_phishing_email_fail': {
+                text: "You send a new awareness email, but without proper containment, the attacker has already used Jane's account to send out more sophisticated phishing emails from inside the company. The incident has now escalated.",
+                choices: [
+                    { text: "End Simulation", next: 'end_breach' }
+                ]
+            },
+            'eradicate_threat_phishing': {
+                text: "You identify a backdoor on Jane's machine and a list of compromised credentials. This is the **Eradication** phase.",
+                choices: [
+                    { text: "Remove the malware, patch vulnerabilities, and force a password reset for all compromised accounts.", next: 'recover_systems' },
+                    { text: "Notify the communications team to prepare a public statement.", next: 'notify_comms_fail', penalty: 20, mistake: "Notified comms before having a full understanding of the incident." }
+                ]
+            },
+            'contain_threat_insider': {
+                text: "Mark's account is disabled. This is the **Containment** phase. His unauthorized access is blocked, preventing further data exfiltration.",
+                choices: [
+                    { text: "Secure all of his access points and begin a full forensic review of his recent activity.", next: 'eradicate_threat_insider' },
+                    { text: "Contact Mark's manager to schedule a meeting with him.", next: 'contact_manager_fail', penalty: 30, mistake: "Attempted to contact the individual before securing all evidence." }
+                ]
+            },
+            'gather_evidence_fail': {
+                text: "You watch Mark's activity to gather evidence. He notices his actions are being monitored and, before you can react, deletes critical logs and exfiltrates a large volume of data.",
+                choices: [
+                    { text: "End Simulation", next: 'end_breach' }
+                ]
+            },
+            'contact_manager_fail': {
+                text: "You contact his manager, but before you can get authorization to disable his account, he purges his logs and destroys evidence on his machine.",
+                choices: [
+                    { text: "End Simulation", next: 'end_failure' }
+                ]
+            },
+            'eradicate_threat_insider': {
+                text: "Your forensic review identifies a list of deleted files and a remote server where data was uploaded. You have successfully gathered all evidence. This is the **Eradication** phase.",
+                choices: [
+                    { text: "Secure the server and recover the files from a clean backup.", next: 'recover_systems' },
+                    { text: "Notify the communications team to prepare a public statement.", next: 'notify_comms_fail', penalty: 20, mistake: "Notified comms before having a full understanding of the incident." }
+                ]
+            },
+            'contain_threat_ransomware': {
+                text: "You successfully disconnect the file server. This is the **Containment** phase. The ransomware is stopped from spreading to other shares.",
+                choices: [
+                    { text: "Begin forensic analysis on the disconnected server.", next: 'eradicate_threat_ransomware' },
+                    { text: "Pay the ransom to get the files back.", next: 'pay_ransom_fail', penalty: 50, mistake: "Paid the ransom without confirming recovery or eradicating the threat." }
+                ]
+            },
+            'decrypt_fail': {
+                text: "You spend time trying to decrypt files. This delay allows the attacker to spread the ransomware to other critical servers and even more file shares, causing a complete network outage.",
+                choices: [
+                    { text: "End Simulation", next: 'end_breach' }
+                ]
+            },
+            'pay_ransom_fail': {
+                text: "You pay the ransom, but the attacker never provides the decryption key. You have lost both the money and the files. The system remains infected.",
+                choices: [
+                    { text: "End Simulation", next: 'end_failure' }
+                ]
+            },
+            'eradicate_threat_ransomware': {
+                text: "Your analysis identifies the entry vector (a vulnerable web server) and the malicious software used. This is the **Eradication** phase. You have a plan for a clean recovery.",
+                choices: [
+                    { text: "Wipe and rebuild the infected server from a clean backup.", next: 'recover_systems_ransomware' },
+                    { text: "Notify the communications team to prepare a public statement.", next: 'notify_comms_fail', penalty: 20, mistake: "Notified comms before having a full understanding of the incident." }
+                ]
+            },
+            'recover_systems_ransomware': {
+                text: "You wipe the infected server and restore a clean backup. This is the **Recovery** phase. Services are now fully operational.",
+                choices: [
+                    { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
+                ]
+            },
+            'contain_escalation': {
+                text: "You successfully contain the escalation. The attacker is locked out, but they have already established persistence on the network. You must find and remove the malicious software.",
+                choices: [
+                    { text: "Deploy a network-wide EDR agent to scan for indicators of compromise.", next: 'find_persistence' },
+                    { text: "Rebuild all compromised machines from a clean image.", next: 'rebuild_fail', penalty: 40, mistake: "Rebuilt machines without identifying the persistence mechanism." }
+                ]
+            },
+            'rebuild_fail': {
+                text: "You rebuild the machines, but the attacker's persistence was never found. Days later, they reappear and launch an even more destructive attack from a different part of the network.",
+                choices: [
+                    { text: "End Simulation", next: 'end_breach' }
+                ]
+            },
+            'find_persistence': {
+                text: "The EDR agent finds the hidden malware. You can now move to the **Eradication** phase.",
+                choices: [
+                    { text: "Remove the malware and patch the vulnerabilities.", next: 'recover_systems' }
+                ]
+            },
+            'revert_backup_fail': {
+                text: "You revert the server to a backup. The immediate threat is gone, but you've wiped out all the forensic data. The root cause remains a mystery. You are forced into a reactive **Hunt** phase to find the original entry point.",
+                choices: [
+                    { text: "Examine firewall logs for unusual connection attempts prior to the alert.", next: 'hunt_for_vulnerability' },
+                    { text: "Assume the problem is solved and resume normal operations.", next: 'assume_solved_fail', penalty: 50, mistake: "Assumed the problem was solved without finding the root cause." }
+                ]
+            },
+            'hunt_for_vulnerability': {
+                text: "Your deep dive into the logs pays off! You discover the vulnerability was an unpatched public-facing service. You can now move on to fixing it.",
+                choices: [
+                    { text: "Patch the vulnerable service and close the gap.", next: 'recover_systems_with_hunt_data' }
+                ]
+            },
+            'assume_solved_fail': {
+                text: "Assuming the problem is solved without finding the root cause is a grave mistake. The attacker re-exploits the same vulnerability within a week, leading to a much larger and more damaging incident.",
+                choices: [
+                    { text: "End Simulation", next: 'end_failure' }
+                ]
+            },
+            'notify_comms_fail': {
+                text: "You notify the communications team, but you have no information to give them. While you wait, the attacker establishes persistence and starts exfiltrating data. The incident is now a major data breach.",
+                choices: [
+                    { text: "End Simulation", next: 'end_breach' }
+                ]
+            },
+            'recover_systems': {
+                text: "With the threat contained and eradicated, you can now move into the **Recovery** phase. You restore services and confirm the system is clean and fully operational.",
+                choices: [
+                    { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
+                ]
+            },
+            'recover_systems_with_hunt_data': {
+                text: "With the threat contained, eradicated, and the root cause identified, you can now move into the **Recovery** phase. You restore services and confirm the system is clean and fully operational.",
+                choices: [
+                    { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
+                ]
+            },
+            'end_win': {
+                text: "SUCCESS: You have successfully navigated the incident response process. This is the **Post-Incident Activity** phase, where lessons learned will strengthen future defenses. Your swift actions have saved the company from a major breach.",
+                choices: []
+            },
+            'end_breach': {
+                text: "BREACH: Your misstep led to a full-scale breach. Sensitive data has been exfiltrated, and the company's reputation is at risk.",
+                choices: []
+            },
+            'end_failure': {
+                text: "FAILURE: The immediate crisis is averted, but you have no evidence to learn how the attacker got in. The vulnerability remains open, a ticking time bomb.",
+                choices: []
+            }
+        };
+
+        const explanations = {
+            'Detection & Analysis': "This is the very first step in incident response. It's when you discover a security event is happening and you gather initial information to understand its scope. It's like a doctor's initial diagnosis—you're looking for symptoms to figure out what's wrong.",
+            'Containment': "Once you've detected a threat, containment is the step you take to stop it from spreading. This is the emergency action to prevent further damage. It could be anything from disconnecting a server from the network to disabling a compromised user account.",
+            'Eradication': "After containing the threat, you need to find and remove the root cause. This involves getting rid of the malicious files, fixing the vulnerability that was exploited, and cleaning up any systems that were affected. It's about eliminating the problem completely.",
+            'Recovery': "This phase is all about restoring normal operations. After the threat is gone, you bring systems back online and verify that everything is clean and secure. The goal is to get the business back to its normal state as quickly and safely as possible.",
+        };
+
+        const startingScenes = ['malware_start', 'phishing_start', 'insider_start', 'ransomware_start'];
+
+        let currentSceneKey;
+        let score;
+        let mistakes;
+
+        const titleEl = document.querySelector('h1');
+        const storyTextEl = document.getElementById('story-text');
+        const choicesContainerEl = document.getElementById('choices-container');
+        const gameOverContainerEl = document.getElementById('game-over-container');
+        const finalScoreEl = document.getElementById('final-score');
+        const feedbackCardEl = document.getElementById('feedback-card');
+        const restartBtnEl = document.getElementById('restart-btn');
+        const termExplanationBtns = document.querySelectorAll('.term-btn');
+        const explanationContainerEl = document.getElementById('explanation-container');
+        const explanationTextEl = document.getElementById('explanation-text');
+        const closeExplanationBtn = document.getElementById('close-explanation-btn');
+
+        const renderScene = () => {
+            const currentScene = scenarios[currentSceneKey];
+            titleEl.textContent = `Threat_Quest: ${currentScene.title}`;
+            storyTextEl.innerHTML = currentScene.text;
+
+            choicesContainerEl.innerHTML = '';
+            currentScene.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice.text;
+                button.className = "bg-gray-700 text-gray-200 font-bold py-3 px-6 rounded-full transition-all duration-300 ease-in-out hover:bg-gray-600 hover:scale-105 active:scale-100";
+                button.addEventListener('click', () => handleChoice(choice));
+                choicesContainerEl.appendChild(button);
+            });
+
+            if (currentScene.choices.length === 0) {
+                gameOverContainerEl.classList.remove('hidden');
+                choicesContainerEl.classList.add('hidden');
+                finalScoreEl.textContent = `${score} / 100`;
+                renderFeedback();
+            } else {
+                gameOverContainerEl.classList.add('hidden');
+                choicesContainerEl.classList.remove('hidden');
+            }
+        };
+
+        const handleChoice = (choice) => {
+            if (choice.penalty) {
+                score -= choice.penalty;
+                mistakes.push(choice.mistake);
+            }
+            currentSceneKey = choice.next;
+            renderScene();
+        };
+
+        const renderFeedback = () => {
+            feedbackCardEl.innerHTML = '';
+            if (mistakes.length === 0) {
+                feedbackCardEl.innerHTML = `
+                    <div>
+                        <p class="text-green-400 font-bold">Excellent! You made no mistakes and followed the NIST framework perfectly.</p>
+                        <p class="mt-2">Your actions led to a successful incident response and you saved the company from a major breach.</p>
+                    </div>
+                `;
+            } else {
+                let listHtml = mistakes.map(m => `<li><strong>Mistake:</strong> ${m}</li>`).join('');
+                feedbackCardEl.innerHTML = `
+                    <div>
+                        <p class="text-yellow-400 font-bold">You made some mistakes along the way, but you can learn from them.</p>
+                        <p class="mt-2">Here is a summary of your actions and what you could improve:</p>
+                        <ul class="list-disc list-inside mt-4 text-left mx-auto max-w-sm space-y-2">
+                            ${listHtml}
+                        </ul>
+                    </div>
+                `;
+            }
+        };
+
+        const getTermExplanation = (term) => {
+            explanationTextEl.textContent = explanations[term];
+            explanationContainerEl.classList.remove('hidden');
+        };
+
+        const startGame = () => {
+            currentSceneKey = startingScenes[Math.floor(Math.random() * startingScenes.length)];
+            score = 100;
+            mistakes = [];
+            explanationContainerEl.classList.add('hidden');
+            renderScene();
+        };
+
+        restartBtnEl.addEventListener('click', startGame);
+        closeExplanationBtn.addEventListener('click', () => {
+            explanationContainerEl.classList.add('hidden');
+        });
+
+        termExplanationBtns.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const term = event.target.dataset.term;
+                getTermExplanation(term);
+            });
+        });
+
+        window.onload = startGame;
+    </script>
+</body>
+</html>
