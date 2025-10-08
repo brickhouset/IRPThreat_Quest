@@ -6,47 +6,70 @@
     <title>Threat_Quest: Incident Response</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Orbitron:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         body {
-            font-family: 'Roboto Mono', monospace;
-            background-color: #0d0d1e;
-            color: #d1d5db;
+            font-family: 'VT323', monospace;
+            background-color: #000;
+            color: #00ff00; /* Classic terminal green */
+            font-size: 1.25rem;
+            line-height: 1.5;
+        }
+        .container-box {
+            background-color: #000;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+            max-width: none;
+            padding: 0;
+        }
+        .terminal-header {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        .text-glow {
+            text-shadow: 0 0 3px #00ff00;
+        }
+        .terminal-button {
+            background-color: transparent;
+            border: none;
+            color: #00ff00;
+            border-radius: 0;
+            transition: all 0.1s ease-in-out;
+            padding: 0.5rem 1rem;
+        }
+        .terminal-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: none;
+            box-shadow: none;
+        }
+        .card-box {
+            background-color: #000;
+            border: none;
+            border-radius: 0;
+        }
+        .final-score {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
         }
     </style>
 </head>
-<body class="flex justify-center items-center min-h-screen p-4">
-    <div id="game-container" class="max-w-xl w-full bg-gray-800 border-4 border-gray-700 rounded-3xl shadow-2xl p-8 text-center">
-        <h1 class="font-['Orbitron'] text-4xl mb-4 text-blue-400 drop-shadow-md"></h1>
-        <div id="story-text" class="text-lg leading-relaxed mb-8 min-h-[100px]"></div>
+<body class="flex justify-center min-h-screen p-8">
+    <div id="game-container" class="w-full container-box">
+        <h1 class="font-['VT323'] text-4xl mb-4 terminal-header text-center"></h1>
+        <div id="story-text" class="text-lg leading-relaxed mb-8 min-h-[100px] text-glow text-left"></div>
 
-        <div id="term-explanation-buttons" class="flex flex-wrap justify-center gap-2 mb-8">
-            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Detection & Analysis">✨ Explain Detection & Analysis ✨</button>
-            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Containment">✨ Explain Containment ✨</button>
-            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Eradication">✨ Explain Eradication ✨</button>
-            <button class="term-btn bg-purple-600 text-white font-bold py-2 px-4 rounded-full transition-all duration-300 ease-in-out hover:bg-purple-700 hover:scale-105 active:scale-100 text-sm" data-term="Recovery">✨ Explain Recovery ✨</button>
-        </div>
-
-        <div id="loading-indicator" class="hidden text-blue-400 mt-4">Generating response...</div>
-        <div id="explanation-container" class="hidden bg-gray-700 p-4 rounded-2xl mb-6 border-2 border-gray-600 text-left relative">
-            <button id="close-explanation-btn" class="absolute top-2 right-2 text-red-400 hover:text-red-500 font-bold text-xl">&times;</button>
-            <h2 class="text-xl font-bold mb-2">Term Explanation:</h2>
-            <p id="explanation-text"></p>
-        </div>
-
-        <div id="choices-container" class="flex flex-col space-y-4"></div>
+        <div id="choices-container" class="flex flex-col space-y-4 items-center"></div>
 
         <div id="game-over-container" class="hidden">
-            <div id="results-card" class="bg-gray-700 p-6 rounded-2xl mb-6 border-2 border-gray-600">
-                <h2 class="text-2xl font-bold mb-2">Simulation Complete</h2>
-                <p class="text-xl font-mono">Final Score: <span id="final-score" class="text-blue-400 font-bold"></span></p>
+            <div id="results-card" class="card-box p-6 mb-6">
+                <h2 class="text-2xl font-bold mb-2 text-glow text-center">Simulation Complete</h2>
+                <p class="text-xl font-mono text-center">Final Score: <span id="final-score" class="final-score font-bold"></span></p>
             </div>
-            <div id="feedback-card" class="bg-gray-700 p-6 rounded-2xl border-2 border-gray-600 mb-6"></div>
-            <button id="get-analysis-btn" class="bg-green-500 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 ease-in-out hover:bg-green-600 hover:scale-105 active:scale-100 mb-4">✨ Get Post-Incident Analysis ✨</button>
-            <div id="analysis-container" class="hidden bg-gray-700 p-6 rounded-2xl border-2 border-gray-600 text-left mb-6">
-                <h2 class="text-xl font-bold mb-2 text-blue-400">Post-Incident Analysis:</h2>
-                <p id="analysis-text"></p>
+            <div id="feedback-card" class="card-box p-6 mb-6"></div>
+            <div class="flex justify-center">
+                <button id="restart-btn" class="terminal-button font-bold py-3 px-6">Restart Simulation</button>
             </div>
-            <button id="restart-btn" class="bg-red-500 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 ease-in-out hover:bg-red-600 hover:scale-105">Restart Simulation</button>
         </div>
     </div>
 
@@ -85,13 +108,15 @@
                 ]
             },
             'contain_threat_malware': {
-                text: "You successfully isolate the server. The suspicious traffic stops. This is the **Containment** phase. You have prevented the threat from spreading.",
+                title: 'Malware Outbreak',
+                text: "You successfully isolate the server. This is the **Containment** phase. You have prevented the threat from spreading.",
                 choices: [
                     { text: "Run a full-system malware scan and vulnerability assessment.", next: 'eradicate_threat_malware' },
                     { text: "Revert the server to a previous clean backup.", next: 'revert_backup_fail', penalty: 30, mistake: "Reverted to a backup without preserving forensic data." }
                 ]
             },
             'analyze_logs_fail_malware': {
+                title: 'Malware Outbreak (Escalated)',
                 text: "You begin your log analysis before containing the threat. The attacker detects your presence and, before you can act, pivots to another machine. The initial incident escalates. Now in an **Escalated Containment** phase, you must act fast to prevent a total breach.",
                 choices: [
                     { text: "Block the attacker's IP and disable the compromised user account.", next: 'contain_escalation' },
@@ -99,12 +124,14 @@
                 ]
             },
             'eradicate_threat_malware': {
+                title: 'Malware Outbreak',
                 text: "You run a full system scan and successfully remove the malware from the server. All identified vulnerabilities have been patched. This is the **Eradication** phase.",
                 choices: [
                     { text: "Verify the system is clean and begin restoration.", next: 'recover_systems' }
                 ]
             },
             'contain_threat_phishing': {
+                title: 'Phishing Campaign',
                 text: "Jane's account is disabled. This is the **Containment** phase. You have stopped the immediate threat of the attacker using her account to spread on the network.",
                 choices: [
                     { text: "Begin forensic analysis of Jane's machine and recent network activity.", next: 'eradicate_threat_phishing' },
@@ -112,12 +139,14 @@
                 ]
             },
             'send_phishing_email_fail': {
+                title: 'Phishing Campaign (Escalated)',
                 text: "You send a new awareness email, but without proper containment, the attacker has already used Jane's account to send out more sophisticated phishing emails from inside the company. The incident has now escalated.",
                 choices: [
                     { text: "End Simulation", next: 'end_breach' }
                 ]
             },
             'eradicate_threat_phishing': {
+                title: 'Phishing Campaign',
                 text: "You identify a backdoor on Jane's machine and a list of compromised credentials. This is the **Eradication** phase.",
                 choices: [
                     { text: "Remove the malware, patch vulnerabilities, and force a password reset for all compromised accounts.", next: 'recover_systems' },
@@ -125,6 +154,7 @@
                 ]
             },
             'contain_threat_insider': {
+                title: 'Insider Threat',
                 text: "Mark's account is disabled. This is the **Containment** phase. His unauthorized access is blocked, preventing further data exfiltration.",
                 choices: [
                     { text: "Secure all of his access points and begin a full forensic review of his recent activity.", next: 'eradicate_threat_insider' },
@@ -132,18 +162,21 @@
                 ]
             },
             'gather_evidence_fail': {
+                title: 'Insider Threat (Escalated)',
                 text: "You watch Mark's activity to gather evidence. He notices his actions are being monitored and, before you can react, deletes critical logs and exfiltrates a large volume of data.",
                 choices: [
                     { text: "End Simulation", next: 'end_breach' }
                 ]
             },
             'contact_manager_fail': {
+                title: 'Insider Threat (Failure)',
                 text: "You contact his manager, but before you can get authorization to disable his account, he purges his logs and destroys evidence on his machine.",
                 choices: [
                     { text: "End Simulation", next: 'end_failure' }
                 ]
             },
             'eradicate_threat_insider': {
+                title: 'Insider Threat',
                 text: "Your forensic review identifies a list of deleted files and a remote server where data was uploaded. You have successfully gathered all evidence. This is the **Eradication** phase.",
                 choices: [
                     { text: "Secure the server and recover the files from a clean backup.", next: 'recover_systems' },
@@ -151,6 +184,7 @@
                 ]
             },
             'contain_threat_ransomware': {
+                title: 'Ransomware Attack',
                 text: "You successfully disconnect the file server. This is the **Containment** phase. The ransomware is stopped from spreading to other shares.",
                 choices: [
                     { text: "Begin forensic analysis on the disconnected server.", next: 'eradicate_threat_ransomware' },
@@ -158,18 +192,21 @@
                 ]
             },
             'decrypt_fail': {
+                title: 'Ransomware Attack (Escalated)',
                 text: "You spend time trying to decrypt files. This delay allows the attacker to spread the ransomware to other critical servers and even more file shares, causing a complete network outage.",
                 choices: [
                     { text: "End Simulation", next: 'end_breach' }
                 ]
             },
             'pay_ransom_fail': {
+                title: 'Ransomware Attack (Failure)',
                 text: "You pay the ransom, but the attacker never provides the decryption key. You have lost both the money and the files. The system remains infected.",
                 choices: [
                     { text: "End Simulation", next: 'end_failure' }
                 ]
             },
             'eradicate_threat_ransomware': {
+                title: 'Ransomware Attack',
                 text: "Your analysis identifies the entry vector (a vulnerable web server) and the malicious software used. This is the **Eradication** phase. You have a plan for a clean recovery.",
                 choices: [
                     { text: "Wipe and rebuild the infected server from a clean backup.", next: 'recover_systems_ransomware' },
@@ -177,12 +214,14 @@
                 ]
             },
             'recover_systems_ransomware': {
+                title: 'Ransomware Attack',
                 text: "You wipe the infected server and restore a clean backup. This is the **Recovery** phase. Services are now fully operational.",
                 choices: [
                     { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
                 ]
             },
             'contain_escalation': {
+                title: 'Malware Outbreak (Escalated)',
                 text: "You successfully contain the escalation. The attacker is locked out, but they have already established persistence on the network. You must find and remove the malicious software.",
                 choices: [
                     { text: "Deploy a network-wide EDR agent to scan for indicators of compromise.", next: 'find_persistence' },
@@ -190,18 +229,21 @@
                 ]
             },
             'rebuild_fail': {
+                title: 'Malware Outbreak (Failure)',
                 text: "You rebuild the machines, but the attacker's persistence was never found. Days later, they reappear and launch an even more destructive attack from a different part of the network.",
                 choices: [
                     { text: "End Simulation", next: 'end_breach' }
                 ]
             },
             'find_persistence': {
+                title: 'Malware Outbreak (Escalated)',
                 text: "The EDR agent finds the hidden malware. You can now move to the **Eradication** phase.",
                 choices: [
                     { text: "Remove the malware and patch the vulnerabilities.", next: 'recover_systems' }
                 ]
             },
             'revert_backup_fail': {
+                title: 'Malware Outbreak (Setback)',
                 text: "You revert the server to a backup. The immediate threat is gone, but you've wiped out all the forensic data. The root cause remains a mystery. You are forced into a reactive **Hunt** phase to find the original entry point.",
                 choices: [
                     { text: "Examine firewall logs for unusual connection attempts prior to the alert.", next: 'hunt_for_vulnerability' },
@@ -209,44 +251,52 @@
                 ]
             },
             'hunt_for_vulnerability': {
+                title: 'Malware Outbreak (Setback)',
                 text: "Your deep dive into the logs pays off! You discover the vulnerability was an unpatched public-facing service. You can now move on to fixing it.",
                 choices: [
                     { text: "Patch the vulnerable service and close the gap.", next: 'recover_systems_with_hunt_data' }
                 ]
             },
             'assume_solved_fail': {
+                title: 'Malware Outbreak (Failure)',
                 text: "Assuming the problem is solved without finding the root cause is a grave mistake. The attacker re-exploits the same vulnerability within a week, leading to a much larger and more damaging incident.",
                 choices: [
                     { text: "End Simulation", next: 'end_failure' }
                 ]
             },
             'notify_comms_fail': {
+                title: 'Incident Escalation',
                 text: "You notify the communications team, but you have no information to give them. While you wait, the attacker establishes persistence and starts exfiltrating data. The incident is now a major data breach.",
                 choices: [
                     { text: "End Simulation", next: 'end_breach' }
                 ]
             },
             'recover_systems': {
+                title: 'Incident Recovery',
                 text: "With the threat contained and eradicated, you can now move into the **Recovery** phase. You restore services and confirm the system is clean and fully operational.",
                 choices: [
                     { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
                 ]
             },
             'recover_systems_with_hunt_data': {
+                title: 'Incident Recovery',
                 text: "With the threat contained, eradicated, and the root cause identified, you can now move into the **Recovery** phase. You restore services and confirm the system is clean and fully operational.",
                 choices: [
                     { text: "Finalize a detailed report for the post-incident review.", next: 'end_win' }
                 ]
             },
             'end_win': {
+                title: 'Simulation Complete (Success)',
                 text: "SUCCESS: You have successfully navigated the incident response process. This is the **Post-Incident Activity** phase, where lessons learned will strengthen future defenses. Your swift actions have saved the company from a major breach.",
                 choices: []
             },
             'end_breach': {
+                title: 'Simulation Complete (Breach)',
                 text: "BREACH: Your misstep led to a full-scale breach. Sensitive data has been exfiltrated, and the company's reputation is at risk.",
                 choices: []
             },
             'end_failure': {
+                title: 'Simulation Complete (Failure)',
                 text: "FAILURE: The immediate crisis is averted, but you have no evidence to learn how the attacker got in. The vulnerability remains open, a ticking time bomb.",
                 choices: []
             }
@@ -265,25 +315,18 @@
         const finalScoreEl = document.getElementById('final-score');
         const feedbackCardEl = document.getElementById('feedback-card');
         const restartBtnEl = document.getElementById('restart-btn');
-        const getAnalysisBtnEl = document.getElementById('get-analysis-btn');
-        const analysisContainerEl = document.getElementById('analysis-container');
-        const analysisTextEl = document.getElementById('analysis-text');
-        const loadingEl = document.getElementById('loading-indicator');
-        const termExplanationBtns = document.querySelectorAll('.term-btn');
-        const explanationContainerEl = document.getElementById('explanation-container');
-        const explanationTextEl = document.getElementById('explanation-text');
-        const closeExplanationBtn = document.getElementById('close-explanation-btn');
 
         const renderScene = () => {
             const currentScene = scenarios[currentSceneKey];
+            // This line ensures the title updates with the current scenario's title
             titleEl.textContent = `Threat_Quest: ${currentScene.title}`;
             storyTextEl.innerHTML = currentScene.text;
 
             choicesContainerEl.innerHTML = '';
-            currentScene.choices.forEach(choice => {
+            currentScene.choices.forEach((choice, index) => {
                 const button = document.createElement('button');
-                button.textContent = choice.text;
-                button.className = "bg-gray-700 text-gray-200 font-bold py-3 px-6 rounded-full transition-all duration-300 ease-in-out hover:bg-gray-600 hover:scale-105 active:scale-100";
+                button.textContent = `${index + 1}. ${choice.text}`;
+                button.className = "terminal-button font-bold text-center py-1 px-2";
                 button.addEventListener('click', () => handleChoice(choice));
                 choicesContainerEl.appendChild(button);
             });
@@ -293,9 +336,6 @@
                 choicesContainerEl.classList.add('hidden');
                 finalScoreEl.textContent = `${score} / 100`;
                 renderFeedback();
-                getAnalysisBtnEl.classList.remove('hidden');
-                analysisContainerEl.classList.add('hidden');
-                analysisTextEl.textContent = '';
             } else {
                 gameOverContainerEl.classList.add('hidden');
                 choicesContainerEl.classList.remove('hidden');
@@ -315,7 +355,7 @@
             feedbackCardEl.innerHTML = '';
             if (mistakes.length === 0) {
                 feedbackCardEl.innerHTML = `
-                    <div>
+                    <div class="text-center">
                         <p class="text-green-400 font-bold">Excellent! You made no mistakes and followed the NIST framework perfectly.</p>
                         <p class="mt-2">Your actions led to a successful incident response and you saved the company from a major breach.</p>
                     </div>
@@ -323,7 +363,7 @@
             } else {
                 let listHtml = mistakes.map(m => `<li><strong>Mistake:</strong> ${m}</li>`).join('');
                 feedbackCardEl.innerHTML = `
-                    <div>
+                    <div class="text-center">
                         <p class="text-yellow-400 font-bold">You made some mistakes along the way, but you can learn from them.</p>
                         <p class="mt-2">Here is a summary of your actions and what you could improve:</p>
                         <ul class="list-disc list-inside mt-4 text-left mx-auto max-w-sm space-y-2">
@@ -331,61 +371,6 @@
                         </ul>
                     </div>
                 `;
-            }
-        };
-
-        const getGeminiAnalysis = async () => {
-            loadingEl.classList.remove('hidden');
-            getAnalysisBtnEl.classList.add('hidden');
-            try {
-                const prompt = `You are a senior cybersecurity professional. The user's final score in a simulation game was ${score} and their mistakes were: ${mistakes.join(', ') || 'none'}. Provide a brief, encouraging, and constructive analysis. Explain the significance of their actions and offer advice for improvement based on their mistakes.`;
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                };
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'No analysis available.';
-                analysisTextEl.textContent = text;
-                analysisContainerEl.classList.remove('hidden');
-            } catch (error) {
-                console.error('Error fetching analysis:', error);
-                analysisTextEl.textContent = 'Error fetching analysis. Please try again.';
-                analysisContainerEl.classList.remove('hidden');
-            } finally {
-                loadingEl.classList.add('hidden');
-            }
-        };
-
-        const getTermExplanation = async (term) => {
-            loadingEl.classList.remove('hidden');
-            explanationContainerEl.classList.remove('hidden');
-            explanationTextEl.textContent = '';
-            try {
-                const prompt = `Provide a simple, single-paragraph explanation of the cybersecurity term "${term}". Explain it as if you are talking to a beginner.`;
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                };
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || 'No explanation available.';
-                explanationTextEl.textContent = text;
-            } catch (error) {
-                console.error('Error fetching explanation:', error);
-                explanationTextEl.textContent = 'Error fetching explanation. Please try again.';
-            } finally {
-                loadingEl.classList.add('hidden');
             }
         };
 
@@ -397,17 +382,6 @@
         };
 
         restartBtnEl.addEventListener('click', startGame);
-        getAnalysisBtnEl.addEventListener('click', getGeminiAnalysis);
-        closeExplanationBtn.addEventListener('click', () => {
-            explanationContainerEl.classList.add('hidden');
-        });
-
-        termExplanationBtns.forEach(button => {
-            button.addEventListener('click', (event) => {
-                const term = event.target.dataset.term;
-                getTermExplanation(term);
-            });
-        });
 
         window.onload = startGame;
     </script>
